@@ -1,0 +1,33 @@
+export const LAMINADO_PINTURA_PARTS = [
+  { id: '1', name: 'Cofre/Capó' },
+  { id: '2', name: 'Salpicadera Delantera Izquierda' },
+  { id: '3', name: 'Salpicadera Delantera Derecha' },
+  { id: '4', name: 'Puerta Delantera Izquierda' },
+  { id: '5', name: 'Puerta Delantera Derecha' },
+  { id: '6', name: 'Puerta Trasera Izquierda' },
+  { id: '7', name: 'Puerta Trasera Derecha' },
+  { id: '8', name: 'Salpicadera Trasera Izquierda' },
+  { id: '9', name: 'Salpicadera Trasera Derecha' },
+  { id: '10', name: 'Cajuela/Tapa Trasera' },
+  { id: '11', name: 'Techo' },
+  { id: '12', name: 'Fascia Delantera' },
+  { id: '13', name: 'Fascia Trasera' },
+  { id: '14', name: 'Estribo Izquierdo' },
+  { id: '15', name: 'Estribo Derecho' },
+];
+
+export const REPLACEMENT_PARTS_EXAMPLES = [
+  'Faro Delantero Izquierdo',
+  'Faro Delantero Derecho',
+  'Calavera Izquierda',
+  'Calavera Derecha',
+  'Parrilla Delantera',
+  'Parachoques Delantero',
+  'Parachoques Trasero',
+  'Espejo Lateral Izquierdo',
+  'Espejo Lateral Derecho',
+  'Cristal Parabrisas',
+  'Cristal Trasero',
+  'Moldura de Puerta',
+  'Manija de Puerta',
+];
