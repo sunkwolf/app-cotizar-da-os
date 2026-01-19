@@ -27,9 +27,9 @@ export interface ReplacementPart {
 export interface Quotation {
   id: string;
   siniestroNumber: string;
+  vehicleBrand: string;
   vehicleModel: string;
   vehicleYear: number;
-  vehiclePlates: string;
   type: QuotationType;
   status: QuotationStatus;
   laminadoPintura: LaminadoPintura[];
@@ -51,9 +51,9 @@ export interface VehiclePart {
 
 export interface QuotationSummaryData {
   siniestroNumber: string;
+  vehicleBrand: string;
   vehicleModel: string;
   vehicleYear: number;
-  vehiclePlates: string;
   type: QuotationType;
   laminadoParts: { name: string; price: number }[];
   replacementParts: ReplacementPart[];
@@ -64,14 +64,38 @@ export interface QuotationSummaryData {
   total: number;
 }
 
+// Quotation detail for viewing
+export interface QuotationDetailData {
+  id: string;
+  siniestroNumber: string;
+  vehicleBrand: string;
+  vehicleModel: string;
+  vehicleYear: number;
+  date: string;
+  status: QuotationStatus;
+  userMobile: string;
+  userShortName: string;
+  laminadoParts: { name: string; price: number }[];
+  replacementParts: { name: string; price: number }[];
+  subtotalLaminado: number;
+  subtotalRepuestos: number;
+  manoDeObraInstalacion: number;
+  adjustment: number;
+  total: number;
+  type: QuotationType;
+}
+
 // Navigation types
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Main: undefined;
+  PendingApproval: undefined;
   NewQuotationType: undefined;
   NewQuotationDetails: { type: QuotationType };
   QuotationSummary: { quotationData: QuotationSummaryData };
+  QuotationFinal: { quotationData: QuotationSummaryData };
+  QuotationDetail: { quotation: QuotationDetailData };
   LaminadoPinturaModal: { 
     selectedParts: string[];
     onSave: (parts: string[]) => void;

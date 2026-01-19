@@ -62,10 +62,10 @@ const getPricePerPart = (year: number, type: QuotationType): number => {
 
 export default function NewQuotationDetailsScreen({ navigation, route }: NewQuotationDetailsScreenProps) {
   const { type } = route.params;
+  const [siniestroNumber, setSiniestroNumber] = useState('');
+  const [vehicleBrand, setVehicleBrand] = useState('');
   const [vehicleModel, setVehicleModel] = useState('');
   const [vehicleYear, setVehicleYear] = useState<number | null>(null);
-  const [siniestroNumber, setSiniestroNumber] = useState('');
-  const [vehiclePlates, setVehiclePlates] = useState('');
   const [showYearPicker, setShowYearPicker] = useState(false);
   const [selectedLaminadoParts, setSelectedLaminadoParts] = useState<string[]>([]);
   const [customLaminadoParts, setCustomLaminadoParts] = useState<{id: string; name: string}[]>([]);
@@ -123,9 +123,9 @@ export default function NewQuotationDetailsScreen({ navigation, route }: NewQuot
     navigation.navigate('QuotationSummary', {
       quotationData: {
         siniestroNumber,
+        vehicleBrand,
         vehicleModel,
         vehicleYear: vehicleYear || 0,
-        vehiclePlates,
         type,
         laminadoParts,
         replacementParts,
@@ -161,7 +161,7 @@ export default function NewQuotationDetailsScreen({ navigation, route }: NewQuot
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Detalles del Vehículo</Text>
 
-          <Text style={styles.label}>Número de Siniestro</Text>
+          <Text style={styles.label}>Número de Siniestro *</Text>
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -172,18 +172,29 @@ export default function NewQuotationDetailsScreen({ navigation, route }: NewQuot
             />
           </View>
 
-          <Text style={styles.label}>Modelo del Vehículo</Text>
+          <Text style={styles.label}>Marca *</Text>
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Ej. Nissan Versa"
+              placeholder="Ej. Nissan"
+              placeholderTextColor={Colors.gray}
+              value={vehicleBrand}
+              onChangeText={setVehicleBrand}
+            />
+          </View>
+
+          <Text style={styles.label}>Modelo *</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Ej. Versa"
               placeholderTextColor={Colors.gray}
               value={vehicleModel}
               onChangeText={setVehicleModel}
             />
           </View>
 
-          <Text style={styles.label}>Año</Text>
+          <Text style={styles.label}>Año *</Text>
           <TouchableOpacity
             style={styles.inputContainer}
             onPress={() => setShowYearPicker(true)}
@@ -193,18 +204,6 @@ export default function NewQuotationDetailsScreen({ navigation, route }: NewQuot
             </Text>
             <Ionicons name="chevron-down" size={20} color={Colors.gray} />
           </TouchableOpacity>
-
-          <Text style={styles.label}>Placas</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej. ABC-123"
-              placeholderTextColor={Colors.gray}
-              value={vehiclePlates}
-              onChangeText={setVehiclePlates}
-              autoCapitalize="characters"
-            />
-          </View>
         </View>
 
         <View style={styles.section}>
@@ -319,7 +318,14 @@ export default function NewQuotationDetailsScreen({ navigation, route }: NewQuot
           </View>
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveQuotation}>
+        <TouchableOpacity 
+          style={[
+            styles.saveButton,
+            (!siniestroNumber.trim() || !vehicleBrand.trim() || !vehicleModel.trim() || !vehicleYear) && styles.saveButtonDisabled
+          ]} 
+          onPress={handleSaveQuotation}
+          disabled={!siniestroNumber.trim() || !vehicleBrand.trim() || !vehicleModel.trim() || !vehicleYear}
+        >
           <Text style={styles.saveButtonText}>Guardar Cotización</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -604,6 +610,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     marginVertical: 24,
+  },
+  saveButtonDisabled: {
+    backgroundColor: Colors.grayLight,
   },
   saveButtonText: {
     color: Colors.white,

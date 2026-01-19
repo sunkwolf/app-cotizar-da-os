@@ -9,12 +9,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 type RegisterScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Register'>;
@@ -22,13 +25,46 @@ type RegisterScreenProps = {
 
 export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const [fullName, setFullName] = useState('');
+  const [shortName, setShortName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('Móvil ');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
 
-  const handleRegister = () => {
-    // TODO: Implement register logic
-    navigation.goBack();
+  const handleRegister = async () => {
+    if (!fullName.trim() || !shortName.trim() || !mobileNumber.trim() || !email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Por favor completa todos los campos');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await signUp(
+      email.trim(), 
+      password, 
+      fullName.trim(),
+      mobileNumber.trim(),
+      shortName.trim()
+    );
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Error', 'No se pudo crear la cuenta. Verifica tus datos e intenta de nuevo.');
+      return;
+    }
+
+    Alert.alert(
+      'Registro exitoso',
+      'Tu cuenta ha sido creada. Un administrador debe aprobarla antes de que puedas acceder. Te notificaremos por correo.',
+      [{ text: 'OK' }]
+    );
+    navigation.replace('Login');
   };
 
   return (
@@ -56,10 +92,32 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.input}
-                placeholder="Ingresa tu nombre completo"
+                placeholder="Ej. Fernando García López"
                 placeholderTextColor={Colors.gray}
                 value={fullName}
                 onChangeText={setFullName}
+              />
+            </View>
+
+            <Text style={styles.label}>Nombre corto (como te conocen)</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ej. Fernando, Liz, Fidel"
+                placeholderTextColor={Colors.gray}
+                value={shortName}
+                onChangeText={setShortName}
+              />
+            </View>
+
+            <Text style={styles.label}>Número de Móvil</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ej. Móvil 7"
+                placeholderTextColor={Colors.gray}
+                value={mobileNumber}
+                onChangeText={setMobileNumber}
               />
             </View>
 
@@ -103,8 +161,16 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-              <Text style={styles.registerButtonText}>Registrarse</Text>
+            <TouchableOpacity 
+              style={[styles.registerButton, loading && styles.registerButtonDisabled]} 
+              onPress={handleRegister}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={Colors.white} />
+              ) : (
+                <Text style={styles.registerButtonText}>Registrarse</Text>
+              )}
             </TouchableOpacity>
 
             <View style={styles.loginContainer}>
@@ -198,6 +264,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
+  },
+  registerButtonDisabled: {
+    opacity: 0.7,
   },
   registerButtonText: {
     color: Colors.white,

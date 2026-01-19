@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { LAMINADO_PINTURA_PARTS } from '../constants/vehicleParts';
+import { VEHICLE_PARTS_BY_CATEGORY } from '../constants/vehicleParts';
 
 interface CustomPart {
   id: string;
@@ -38,12 +38,14 @@ export default function LaminadoPinturaModal({
   const [localSelectedParts, setLocalSelectedParts] = useState<string[]>([]);
   const [localCustomParts, setLocalCustomParts] = useState<CustomPart[]>([]);
   const [newPartName, setNewPartName] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (visible) {
       setLocalSelectedParts([...selectedParts]);
       setLocalCustomParts([...customParts]);
       setNewPartName('');
+      setExpandedCategories([]);
     }
   }, [visible, selectedParts, customParts]);
 
@@ -53,6 +55,20 @@ export default function LaminadoPinturaModal({
         ? prev.filter((id) => id !== partId)
         : [...prev, partId]
     );
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const getSelectedCountForCategory = (categoryId: string) => {
+    const category = VEHICLE_PARTS_BY_CATEGORY.find(c => c.id === categoryId);
+    if (!category) return 0;
+    return category.parts.filter(part => localSelectedParts.includes(part.id)).length;
   };
 
   const handleSave = () => {
@@ -101,26 +117,61 @@ export default function LaminadoPinturaModal({
           </Text>
 
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            {LAMINADO_PINTURA_PARTS.map((part) => {
-              const isSelected = localSelectedParts.includes(part.id);
+            {VEHICLE_PARTS_BY_CATEGORY.map((category) => {
+              const isExpanded = expandedCategories.includes(category.id);
+              const selectedCount = getSelectedCountForCategory(category.id);
+              
               return (
-                <TouchableOpacity
-                  key={part.id}
-                  style={styles.partItem}
-                  onPress={() => togglePart(part.id)}
-                >
-                  <Text style={styles.partName}>{part.name}</Text>
-                  <View
-                    style={[
-                      styles.checkbox,
-                      isSelected && styles.checkboxSelected,
-                    ]}
+                <View key={category.id} style={styles.categoryContainer}>
+                  <TouchableOpacity
+                    style={styles.categoryHeader}
+                    onPress={() => toggleCategory(category.id)}
                   >
-                    {isSelected && (
-                      <Ionicons name="checkmark" size={16} color={Colors.white} />
+                    <View style={styles.categoryTitleContainer}>
+                      <Ionicons
+                        name={isExpanded ? 'chevron-down' : 'chevron-forward'}
+                        size={20}
+                        color={Colors.primary}
+                      />
+                      <View style={styles.categoryTextContainer}>
+                        <Text style={styles.categoryTitle}>{category.title}</Text>
+                        <Text style={styles.categoryDescription}>{category.description}</Text>
+                      </View>
+                    </View>
+                    {selectedCount > 0 && (
+                      <View style={styles.selectedBadge}>
+                        <Text style={styles.selectedBadgeText}>{selectedCount}</Text>
+                      </View>
                     )}
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <View style={styles.partsContainer}>
+                      {category.parts.map((part) => {
+                        const isSelected = localSelectedParts.includes(part.id);
+                        return (
+                          <TouchableOpacity
+                            key={part.id}
+                            style={styles.partItem}
+                            onPress={() => togglePart(part.id)}
+                          >
+                            <Text style={styles.partName}>{part.name}</Text>
+                            <View
+                              style={[
+                                styles.checkbox,
+                                isSelected && styles.checkboxSelected,
+                              ]}
+                            >
+                              {isSelected && (
+                                <Ionicons name="checkmark" size={16} color={Colors.white} />
+                              )}
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
               );
             })}
 
@@ -216,6 +267,56 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  categoryContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: Colors.inputBackground,
+  },
+  categoryTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+  },
+  categoryTextContainer: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  categoryTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  categoryDescription: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 16,
+  },
+  selectedBadge: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    marginLeft: 8,
+  },
+  selectedBadgeText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  partsContainer: {
+    backgroundColor: Colors.white,
   },
   partItem: {
     flexDirection: 'row',

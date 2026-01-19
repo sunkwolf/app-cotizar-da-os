@@ -36,7 +36,7 @@ export default function NewQuotationTypeScreen({ navigation }: NewQuotationTypeS
           />
         </View>
 
-        <Text style={styles.subtitle}>Seleccione el tipo de siniestro</Text>
+        <Text style={styles.subtitle}>Seleccione para quién es la cotización</Text>
 
         <TouchableOpacity
           style={styles.optionButtonPrimary}

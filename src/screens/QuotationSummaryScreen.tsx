@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +15,8 @@ import { Colors } from '../constants/colors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 type QuotationSummaryScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'QuotationSummary'>;
@@ -22,6 +25,8 @@ type QuotationSummaryScreenProps = {
 
 export default function QuotationSummaryScreen({ navigation, route }: QuotationSummaryScreenProps) {
   const { quotationData } = route.params;
+  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
   
   const currentDate = new Date().toLocaleDateString('es-MX', {
     day: '2-digit',
@@ -29,13 +34,39 @@ export default function QuotationSummaryScreen({ navigation, route }: QuotationS
     year: 'numeric',
   });
 
-  const handleGeneratePDF = () => {
-    // TODO: Implement PDF generation
-    Alert.alert(
-      'Generar PDF',
-      'La funcionalidad de generación de PDF se implementará con la lógica de negocio.',
-      [{ text: 'OK' }]
-    );
+  const handleSave = async () => {
+    if (!user) {
+      Alert.alert('Error', 'Debes iniciar sesión para guardar la cotización');
+      return;
+    }
+
+    setSaving(true);
+    
+    const { error } = await supabase.from('quotations').insert({
+      user_id: user.id,
+      siniestro_number: quotationData.siniestroNumber,
+      vehicle_brand: quotationData.vehicleBrand,
+      vehicle_model: quotationData.vehicleModel,
+      vehicle_year: quotationData.vehicleYear,
+      type: quotationData.type,
+      laminado_parts: quotationData.laminadoParts,
+      replacement_parts: quotationData.replacementParts,
+      subtotal_laminado: quotationData.subtotalLaminado,
+      subtotal_repuestos: quotationData.subtotalRepuestos,
+      mano_de_obra_instalacion: quotationData.manoDeObraInstalacion,
+      adjustment: quotationData.adjustment,
+      total: quotationData.total,
+    });
+
+    setSaving(false);
+
+    if (error) {
+      Alert.alert('Error', 'No se pudo guardar la cotización. Intenta de nuevo.');
+      console.error('Error saving quotation:', error);
+      return;
+    }
+
+    navigation.navigate('QuotationFinal', { quotationData });
   };
 
   return (
@@ -66,18 +97,24 @@ export default function QuotationSummaryScreen({ navigation, route }: QuotationS
               <Text style={styles.infoValue}>{quotationData.siniestroNumber || 'N/A'}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Marca y Modelo</Text>
+              <Text style={styles.infoLabel}>Fecha</Text>
+              <Text style={styles.infoValue}>{currentDate}</Text>
+            </View>
+          </View>
+          <View style={styles.infoRow}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Marca</Text>
+              <Text style={styles.infoValue}>{quotationData.vehicleBrand || 'N/A'}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Modelo</Text>
               <Text style={styles.infoValue}>{quotationData.vehicleModel || 'N/A'}</Text>
             </View>
           </View>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Fecha</Text>
-              <Text style={styles.infoValue}>{currentDate}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Año y Placas</Text>
-              <Text style={styles.infoValue}>{quotationData.vehicleYear}, {quotationData.vehiclePlates || 'N/A'}</Text>
+              <Text style={styles.infoLabel}>Año</Text>
+              <Text style={styles.infoValue}>{quotationData.vehicleYear}</Text>
             </View>
           </View>
           <View style={styles.infoRow}>
@@ -174,10 +211,20 @@ export default function QuotationSummaryScreen({ navigation, route }: QuotationS
           </View>
         </View>
 
-        {/* Generate PDF Button */}
-        <TouchableOpacity style={styles.pdfButton} onPress={handleGeneratePDF}>
-          <Ionicons name="document-text" size={20} color={Colors.white} />
-          <Text style={styles.pdfButtonText}>Generar PDF</Text>
+        {/* Save Button */}
+        <TouchableOpacity 
+          style={[styles.pdfButton, saving && styles.pdfButtonDisabled]} 
+          onPress={handleSave}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator color={Colors.white} />
+          ) : (
+            <>
+              <Ionicons name="save" size={20} color={Colors.white} />
+              <Text style={styles.pdfButtonText}>Guardar Cotización</Text>
+            </>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -344,6 +391,9 @@ const styles = StyleSheet.create({
     height: 56,
     marginHorizontal: 16,
     marginVertical: 24,
+  },
+  pdfButtonDisabled: {
+    opacity: 0.7,
   },
   pdfButtonText: {
     color: Colors.white,

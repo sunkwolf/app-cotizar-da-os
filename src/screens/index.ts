@@ -4,3 +4,7 @@ export { default as QuotationsPanelScreen } from './QuotationsPanelScreen';
 export { default as NewQuotationTypeScreen } from './NewQuotationTypeScreen';
 export { default as NewQuotationDetailsScreen } from './NewQuotationDetailsScreen';
 export { default as QuotationSummaryScreen } from './QuotationSummaryScreen';
+export { default as QuotationFinalScreen } from './QuotationFinalScreen';
+export { default as QuotationDetailScreen } from './QuotationDetailScreen';
+export { default as AdminPanelScreen } from './AdminPanelScreen';
+export { default as PendingApprovalScreen } from './PendingApprovalScreen';
